@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Conectados
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  Trabajadores que están conectados
 // @author       Juanma
 // @match        https://intranet.iti.upv.es/iti-hrm/controlhorario/
@@ -12,6 +12,8 @@ function crearListado(trabajadores) {
     let conectados = [];
     let ausentes = [];
     let desconectados = [];
+    let enVacaciones = [];
+
     trabajadores = trabajadores.sort((a,b) => (a.tiempo > b.tiempo) ? 1 : ((b.tiempo > a.tiempo) ? -1 : 0));
     trabajadores.forEach(trabajador => {
         switch (trabajador.estado) {
@@ -19,17 +21,23 @@ function crearListado(trabajadores) {
                 conectados.push(trabajador);
                 break;
             case 'away':
-                ausentes.push(trabajador);
+                if (trabajador.tipo === 'per') {
+                    enVacaciones.push(trabajador);
+                } else {
+                    ausentes.push(trabajador);
+                }
                 break;
             case 'off_work':
                 desconectados.push(trabajador);
                 break;
         }
     });
+
     let conectadosHTML = '';
     let ausentesHTML = '';
     let desconectadosHTML = '';
-    console.log(conectados);
+    let enVacacionesHTML = '';
+
     if (conectados.length > 0) {
         conectadosHTML = '<div style="margin-top: 5px;"><strong style="color: #1c84c6">Conectados</strong></div>';
         conectados.forEach(t => {
@@ -63,7 +71,18 @@ function crearListado(trabajadores) {
         `;
         });
     }
-    const html = conectadosHTML + ausentesHTML + desconectadosHTML;
+    if (enVacaciones.length > 0) {
+        enVacacionesHTML = '<div style="margin-top: 5px;"><strong style="color: #a7bf44">En vacaciones</strong></div>';
+        enVacaciones.forEach(t => {
+           enVacacionesHTML += `
+		<div style="color: #a7bf44;">
+            <img data-v-18dfe0cb="" width="15" height="auto" src="${t.imagen}">
+			${t.nombre}
+		</div>
+        `;
+        });
+    }
+    const html = conectadosHTML + ausentesHTML + desconectadosHTML + enVacacionesHTML;
     $($(".panel-group")[0].children[1]).after(html);
 }
 
@@ -90,6 +109,7 @@ function getInfo(jsonString) {
         'nombre': `${obj.person.firstname} ${obj.person.surname}`,
         'available': obj.activity.available,
         'estado': obj.activity.status,
+        'tipo': obj.activity.type,
         'imagen': obj.person.image,
         'tiempo': new Date(obj.activity.timestamp)
     };
