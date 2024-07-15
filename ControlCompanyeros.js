@@ -21,6 +21,7 @@ function crearListado(trabajadores) {
                 conectados.push(trabajador);
                 break;
             case 'away':
+            case 'inactive':
                 if (trabajador.tipo === 'per') {
                     enVacaciones.push(trabajador);
                 } else {
