@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Conectados
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      0.3.1
 // @description  Trabajadores que están conectados
 // @author       Juanma
-// @match        https://intranet.iti.upv.es/iti-hrm/controlhorario/
+// @match        https://intranet.iti.upv.es/*/controlhorario/
 // @grant        none
 // ==/UserScript==
 
