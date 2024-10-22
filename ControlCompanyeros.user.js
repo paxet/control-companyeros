@@ -1,11 +1,15 @@
 // ==UserScript==
-// @name         Conectados
-// @namespace    http://tampermonkey.net/
-// @version      0.3.1
-// @description  Trabajadores que están conectados
-// @author       Juanma
-// @match        https://intranet.iti.upv.es/*/controlhorario/
-// @grant        none
+// @name           Connected coworkers
+// @name:es        Compañeros conectados
+// @namespace      Violentmonkey Scripts
+// @match          https://intranet.iti.upv.es/*/controlhorario/
+// @grant          none
+// @version        0.4.0
+// @author         Javier C.
+// @description    Show status for ITI coworkers.
+// @description:es Muestra el estado de los compañeros del ITI.
+// @run-at         document-idle
+// @downloadURL    https://raw.githubusercontent.com/paxet/control-companyeros/refs/heads/main/ControlCompanyeros.js
 // ==/UserScript==
 
 function divUsuario(trabajador, color) {
@@ -80,7 +84,7 @@ function crearListado(trabajadores) {
   }
   const html =
     conectadosHTML + ausentesHTML + desconectadosHTML + enVacacionesHTML;
-  $($('.panel-group')[0].children[1]).after(html);
+  document.getElementsByClassName('accordions-container')[0].innerHTML += html;
 }
 
 function getTimeFormat(t) {
@@ -116,15 +120,14 @@ function getTrabajadores(ids) {
   let infoTrabajadores = [];
   ids.forEach(id => {
     const data = httpGet(
-      'https://intranet.iti.upv.es/iti-hrm/controlhorario/informe-ultimo-fichaje/persona/' +
-        id
+      `https://intranet.iti.upv.es/iti-hrm/controlhorario/informe-ultimo-fichaje/persona/${id}`
     );
     infoTrabajadores.push(getInfo(data));
   });
   return infoTrabajadores;
 }
 
-function main(ids) {
+function whenElementLoaded(ids) {
   const infoTrabajadores = getTrabajadores(ids);
   crearListado(infoTrabajadores);
 }
@@ -132,5 +135,15 @@ function main(ids) {
 (function () {
   'use strict';
   const idsTrabajadores = []; // Pon aquí los ids de tus compañeros
-  main(idsTrabajadores);
+  var intervalID = setInterval(function () {
+    if (document.getElementsByClassName('accordions-container').length) {
+      clearInterval(intervalID);
+      if (idsTrabajadores.length == 0) {
+        let message = 'Recuerda <strong>indicar</strong> los IDs.';
+        document.getElementsByClassName('accordions-container')[0].innerHTML +=
+          message;
+      }
+      whenElementLoaded(idsTrabajadores);
+    }
+  }, 350);
 })();
