@@ -13,7 +13,7 @@
 // @inject-into    content
 // @homepageURL
 // @supportURL
-// @downloadURL    https://raw.githubusercontent.com/paxet/control-companyeros/refs/heads/main/ControlCompanyeros.user.js
+// @downloadURL    https://raw.githubusercontent.com/paxet/control-companyeros/refs/heads/main/compas-conectados.user.js
 // ==/UserScript==
 
 function genUserSection(trabajador, color) {
