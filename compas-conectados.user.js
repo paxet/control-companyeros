@@ -168,23 +168,57 @@ function getTrabajadores(ids) {
   return infoTrabajadores;
 }
 
+function getContainerWidget() {
+  let csElement = document.getElementById('coworkers-status');
+  if (csElement == null) {
+    const rootElement = document.getElementsByClassName(
+      'accordions-container'
+    )[0];
+
+    csElement = document.createElement('div');
+    csElement.setAttribute('id', 'coworkers-status');
+    csElement.setAttribute("class", "panel-heading");
+    rootElement.appendChild(csElement);
+
+    let actionsSection = document.createElement('div');
+    actionsSection.setAttribute("style", "display: flex; justify-content: flex-end")
+    actionsSection.innerHTML = `
+      <button id="add-coworker"><i class="fa fa-plus" aria-hidden="true"></i></button>
+      &nbsp;
+      <button id="clear-coworkers"><i class="fa fa-eraser" aria-hidden="true"></i></button>`;
+    csElement.appendChild(actionsSection);
+
+    document.getElementById('add-coworker').addEventListener('click', function () {
+      addCoworker();
+    });
+
+    document.getElementById('clear-coworkers').addEventListener('click', function () {
+      clearCoworkers();
+    });
+
+  }
+
+  return csElement;
+}
+
 function getElementWidget() {
-  return document.getElementById('coworkers-status');
+  let coworkersSection = document.getElementById('coworkers-list');
+  if (coworkersSection == null) {
+    coworkersSection = generateElementWidget();
+  }
+
+  return coworkersSection;
 }
 
 function generateElementWidget() {
-  const rootElement = document.getElementsByClassName(
-    'accordions-container'
-  )[0];
+  const csElement = getContainerWidget();
+  let coworkersSection = document.createElement('div');
+  coworkersSection.setAttribute('id', 'coworkers-list');
+  coworkersSection.innerHTML = 'Cargando...';
 
-  //TODO: Create parent with nested divs, one for coworkers and another for button to add or clear all.
-  let csElement = document.createElement('div');
-  csElement.setAttribute('id', 'coworkers-status');
-  csElement.innerHTML = 'Cargando...';
+  csElement.insertBefore(coworkersSection, csElement.firstChild);
 
-  rootElement.appendChild(csElement);
-
-  return csElement;
+  return coworkersSection;
 }
 
 function addCoworker() {
@@ -193,7 +227,9 @@ function addCoworker() {
   //TODO: Add some checks and sanitize value.
   GM.getValue('coworkers', '').then(
     function (value) {
-      GM.setValue('coworkers', `${value},${text}`);
+      let cwlist = value.length >= 1 ? `${value},${text}` : text;
+      GM.setValue('coworkers', cwlist);
+      loadFromText(cwlist);
     },
     function (error) {
       console.log(`Error accediendo localStorage: ${error}`);
@@ -201,13 +237,18 @@ function addCoworker() {
   );
 }
 
+function clearCoworkers() {
+  const coworkersSection = getElementWidget();
+  if (coworkersSection) {
+    coworkersSection.parentNode.removeChild(coworkersSection);
+  }
+  GM.setValue('coworkers', '');
+  generateElementWidget().innerHTML = "Recuerda <strong>indicar</strong> los IDs.";
+}
+
 function loadFromText(value) {
   const coworkers = value.split(',');
   let csElement = getElementWidget();
-
-  if (csElement == null) {
-    csElement = generateElementWidget();
-  }
 
   if (coworkers.length >= 1 && coworkers[0] != '') {
     let infoTrabajadores = getTrabajadores(coworkers);
